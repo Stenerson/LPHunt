@@ -1,20 +1,64 @@
 <script setup>
-defineProps({
+import { ref } from 'vue'
+
+const props = defineProps({
   abbr: { type: String, required: true },
   name: { type: String, required: true },
   found: { type: Boolean, required: true },
 })
-defineEmits(['toggle'])
+const emit = defineEmits(['toggle', 'hint'])
+
+const HOLD_MS = 600
+let pressTimer = null
+let didHold = false
+const holding = ref(false)
+
+function onPointerDown() {
+  if (!props.found) return
+  didHold = false
+  holding.value = true
+  pressTimer = setTimeout(() => {
+    holding.value = false
+    didHold = true
+    navigator.vibrate?.(30)
+    emit('toggle', props.abbr)
+  }, HOLD_MS)
+}
+
+function onPointerUp() {
+  clearTimeout(pressTimer)
+  holding.value = false
+}
+
+function onClick() {
+  // Swallow the click that fires right after a successful hold
+  if (didHold) {
+    didHold = false
+    return
+  }
+  if (!props.found) {
+    emit('toggle', props.abbr)
+  } else {
+    emit('hint') // tell parent to show "hold to unselect" toast
+  }
+}
 </script>
 
 <template>
   <button
-    @click="$emit('toggle', abbr)"
-    class="relative flex flex-col rounded-xl overflow-hidden w-full aspect-[2/1] transition-all duration-150 active:scale-95 select-none border-2"
+    @click="onClick"
+    @pointerdown="onPointerDown"
+    @pointerup="onPointerUp"
+    @pointercancel="onPointerUp"
+    @pointerleave="onPointerUp"
+    class="relative flex flex-col rounded-xl overflow-hidden w-full aspect-[2/1] select-none border-2 transition-all duration-150"
+    :class="[
+      found
+        ? 'bg-white border-lp-green shadow-md'
+        : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm active:scale-95',
+      found && holding ? 'scale-95 opacity-60' : '',
+    ]"
     style="touch-action: manipulation"
-    :class="found
-      ? 'bg-white border-lp-green shadow-md'
-      : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm'"
   >
     <!-- Top accent strip -->
     <div

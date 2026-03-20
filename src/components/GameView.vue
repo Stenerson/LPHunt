@@ -109,6 +109,15 @@ async function shareGame() {
   setTimeout(() => { linkCopied.value = false }, 2500)
 }
 
+// Hold-to-unselect hint toast
+const showHoldHint = ref(false)
+let hintTimer = null
+function handleHint() {
+  clearTimeout(hintTimer)
+  showHoldHint.value = true
+  hintTimer = setTimeout(() => { showHoldHint.value = false }, 2000)
+}
+
 // Celebration state
 const showAllStatesOverlay = ref(false)
 const showHighScoreBanner = ref(false)
@@ -341,6 +350,7 @@ function isFound(abbr) {
         :name="item.name"
         :found="isFound(item.abbr)"
         @toggle="handleToggle"
+        @hint="handleHint"
       />
       <div
         v-if="filteredItems.length === 0"
@@ -357,6 +367,16 @@ function isFound(abbr) {
       Go Home
     </button>
   </div>
+
+  <!-- Hold-to-unselect hint toast -->
+  <Transition name="slide-up">
+    <div
+      v-if="showHoldHint"
+      class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-lp-dark text-white px-5 py-2.5 rounded-full text-sm font-medium shadow-lg whitespace-nowrap pointer-events-none"
+    >
+      Hold to unselect a plate
+    </div>
+  </Transition>
 
   <!-- All 50 states overlay -->
   <Transition name="fade">
@@ -397,5 +417,15 @@ function isFound(abbr) {
 .slide-down-leave-to {
   opacity: 0;
   transform: translateY(-100%);
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(12px);
 }
 </style>
