@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import confetti from 'canvas-confetti'
 import { STATES } from '../data/states.js'
 import { PROVINCES } from '../data/provinces.js'
@@ -14,6 +14,25 @@ const { games, activeGame, toggleRegionEntry, setShowCanada, toggleIncludeCanada
 const { isDark, toggle: toggleDark } = useDarkMode()
 
 const menuOpen = ref(false)
+
+// Keep screen awake while playing
+let wakeLock = null
+async function acquireWakeLock() {
+  if (!('wakeLock' in navigator)) return
+  try {
+    wakeLock = await navigator.wakeLock.request('screen')
+  } catch {}
+}
+onMounted(() => {
+  acquireWakeLock()
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') acquireWakeLock()
+  })
+})
+onUnmounted(() => {
+  wakeLock?.release()
+  wakeLock = null
+})
 
 const showingCanada = computed(() => activeGame.value?.showCanada ?? false)
 
