@@ -87,6 +87,34 @@ export function useGame() {
     persist()
   }
 
+  function mergeGame(sharedData) {
+    const target = games.value.find(g => g.id === activeId.value)
+    if (!target) return
+
+    for (const [abbr, entry] of Object.entries(sharedData.states ?? {})) {
+      if (entry.found && target.states[abbr] && !target.states[abbr].found) {
+        target.states[abbr].found = true
+        target.states[abbr].foundAt = new Date().toISOString()
+      }
+    }
+
+    // Always merge provinces even if includeCanada is false —
+    // toggleIncludeCanada preserves existing data when Canada is added later.
+    if (!target.provinces) target.provinces = {}
+    for (const [abbr, entry] of Object.entries(sharedData.provinces ?? {})) {
+      if (entry.found) {
+        if (!target.provinces[abbr]) {
+          target.provinces[abbr] = { found: true, foundAt: new Date().toISOString() }
+        } else if (!target.provinces[abbr].found) {
+          target.provinces[abbr].found = true
+          target.provinces[abbr].foundAt = new Date().toISOString()
+        }
+      }
+    }
+
+    persist()
+  }
+
   function importGame(sharedData) {
     const game = {
       id: crypto.randomUUID(),
@@ -132,6 +160,7 @@ export function useGame() {
     activeId,
     activeGame,
     createGame,
+    mergeGame,
     importGame,
     toggleRegionEntry,
     setShowCanada,

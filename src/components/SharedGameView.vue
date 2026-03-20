@@ -9,9 +9,9 @@ import ProgressBar from './ProgressBar.vue'
 const props = defineProps({
   sharedGame: { type: Object, required: true },
 })
-const emit = defineEmits(['navigate'])
+const emit = defineEmits(['navigate', 'merge'])
 
-const { importGame, activeGame } = useGame()
+const { importGame, mergeGame, activeGame } = useGame()
 const { isDark, toggle: toggleDark } = useDarkMode()
 const showingCanada = ref(false)
 
@@ -30,8 +30,43 @@ function countFound(region) {
 const foundCount = computed(() => countFound(currentRegion.value))
 const totalCount = computed(() => currentItems.value.length)
 
+const myFoundCount = computed(() => {
+  if (!activeGame.value) return foundCount.value
+  return currentItems.value.filter(item => isFoundInMyGame(item.abbr)).length
+})
+
+const newCount = computed(() => {
+  if (!activeGame.value) return 0
+  return currentItems.value.filter(item => wouldBeNew(item.abbr)).length
+})
+
 function goBack() {
   emit('navigate', activeGame.value ? 'game' : 'home')
+}
+
+function isFoundInMyGame(abbr) {
+  return activeGame.value?.[currentRegion.value]?.[abbr]?.found ?? false
+}
+
+function wouldBeNew(abbr) {
+  if (!activeGame.value) return false
+  return isFound(abbr) && !isFoundInMyGame(abbr)
+}
+
+function cardClass(abbr) {
+  if (wouldBeNew(abbr)) {
+    return 'bg-blue-500 text-white shadow-md'
+  }
+  if (isFound(abbr) || isFoundInMyGame(abbr)) {
+    const ring = (isFound(abbr) && isFoundInMyGame(abbr)) ? ' ring-2 ring-blue-400' : ''
+    return 'bg-lp-green text-white shadow-md' + ring
+  }
+  return 'bg-white dark:bg-gray-800 text-lp-dark dark:text-gray-100 shadow-sm border border-gray-200 dark:border-gray-700 opacity-40'
+}
+
+function mergeAndPlay() {
+  mergeGame(props.sharedGame)
+  emit('merge')
 }
 
 function saveAndPlay() {
@@ -73,8 +108,8 @@ function saveAndPlay() {
 
     <!-- Progress -->
     <div class="bg-white dark:bg-gray-800 px-4 pt-3 pb-4 shadow-sm">
-      <p class="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">{{ sharedGame.name }}</p>
-      <ProgressBar :found="foundCount" :total="totalCount" />
+      <p class="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Shared game &middot; {{ foundCount }}/{{ totalCount }} found</p>
+      <ProgressBar :found="myFoundCount" :total="totalCount" :additional="newCount" />
     </div>
 
     <!-- Region tabs -->
@@ -97,30 +132,35 @@ function saveAndPlay() {
 
     <!-- Read-only state grid -->
     <div
-      class="flex-1 p-3 grid gap-2 content-start pb-24"
+      class="flex-1 p-3 grid gap-2 content-start pb-40"
       style="grid-template-columns: repeat(auto-fill, minmax(96px, 1fr))"
     >
       <div
         v-for="item in currentItems"
         :key="item.abbr"
         class="relative flex flex-col items-center justify-center rounded-xl min-h-[96px] p-2 w-full select-none overflow-hidden"
-        :class="isFound(item.abbr)
-          ? 'bg-lp-green text-white shadow-md'
-          : 'bg-white dark:bg-gray-800 text-lp-dark dark:text-gray-100 shadow-sm border border-gray-200 dark:border-gray-700 opacity-40'"
+        :class="cardClass(item.abbr)"
       >
         <span class="font-bold text-base leading-none">{{ item.abbr }}</span>
         <span class="text-[9px] uppercase tracking-normal mt-1 leading-tight text-center opacity-75 w-full px-0.5">{{ item.name }}</span>
-        <span v-if="isFound(item.abbr)" class="absolute top-1 right-1.5 text-[10px] opacity-60">&#10003;</span>
+        <span v-if="isFound(item.abbr) || isFoundInMyGame(item.abbr)" class="absolute top-1 right-1.5 text-[10px] opacity-60">&#10003;</span>
       </div>
     </div>
 
     <!-- Sticky CTA -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 p-4">
+    <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 p-4 flex flex-col gap-3">
+      <button
+        v-if="activeGame"
+        @click="mergeAndPlay"
+        class="w-full bg-blue-500 text-white font-semibold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition-all"
+      >
+        Merge into My Game
+      </button>
       <button
         @click="saveAndPlay"
         class="w-full bg-lp-red text-white font-semibold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition-all"
       >
-        Continue This Game
+        Continue as New Game
       </button>
     </div>
   </div>

@@ -43,6 +43,10 @@ onUnmounted(() => {
 function navigate(view) {
   currentView.value = view
 }
+
+function handleMerge() {
+  currentView.value = 'game'
+}
 </script>
 
 <template>
@@ -67,6 +71,7 @@ function navigate(view) {
       v-else-if="currentView === 'shared-game' && sharedGameData"
       :sharedGame="sharedGameData"
       @navigate="navigate"
+      @merge="handleMerge"
     />
   </div>
 </template>
