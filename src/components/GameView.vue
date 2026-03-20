@@ -59,8 +59,22 @@ const linkCopied = ref(false)
 
 async function shareGame() {
   const url = window.location.href.split('#')[0] + '#share=' + encodeGame(activeGame.value)
-  await navigator.clipboard.writeText(url)
   menuOpen.value = false
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ url })
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        await navigator.clipboard.writeText(url)
+        linkCopied.value = true
+        setTimeout(() => { linkCopied.value = false }, 2500)
+      }
+    }
+    return
+  }
+
+  await navigator.clipboard.writeText(url)
   linkCopied.value = true
   setTimeout(() => { linkCopied.value = false }, 2500)
 }
