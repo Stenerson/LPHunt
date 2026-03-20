@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import confetti from 'canvas-confetti'
 import { STATES } from '../data/states.js'
 import { PROVINCES } from '../data/provinces.js'
 import { useGame } from '../composables/useGame.js'
@@ -8,7 +9,7 @@ import ProgressBar from './ProgressBar.vue'
 import StateCard from './StateCard.vue'
 
 defineEmits(['navigate'])
-const { activeGame, toggleRegionEntry, setShowCanada, toggleIncludeCanada, countFound } = useGame()
+const { games, activeGame, toggleRegionEntry, setShowCanada, toggleIncludeCanada, countFound } = useGame()
 const { isDark, toggle: toggleDark } = useDarkMode()
 
 const menuOpen = ref(false)
@@ -29,6 +30,71 @@ const foundCount = computed(() => {
 })
 
 const totalCount = computed(() => currentItems.value.length)
+
+// Always track US states found (regardless of active tab)
+const statesFound = computed(() => {
+  if (!activeGame.value) return 0
+  return countFound(activeGame.value, 'states')
+})
+
+// Total found across all regions in this game
+const totalFound = computed(() => {
+  if (!activeGame.value) return 0
+  return countFound(activeGame.value, 'states') +
+    (activeGame.value.includeCanada ? countFound(activeGame.value, 'provinces') : 0)
+})
+
+// Best total from any other game (excluding current)
+const previousBest = computed(() => {
+  const others = games.value.filter(g => g.id !== activeGame.value?.id)
+  if (others.length === 0) return -1
+  return Math.max(0, ...others.map(g =>
+    countFound(g, 'states') + (g.includeCanada ? countFound(g, 'provinces') : 0)
+  ))
+})
+
+// Celebration state
+const showAllStatesOverlay = ref(false)
+const showHighScoreBanner = ref(false)
+const highScoreCount = ref(0)
+const celebratedAllStates = ref(false)
+const celebratedHighScore = ref(false)
+
+// Reset celebrations when game changes
+watch(() => activeGame.value?.id, () => {
+  celebratedAllStates.value = false
+  celebratedHighScore.value = false
+})
+
+// All 50 US states found
+watch(statesFound, (newVal, oldVal) => {
+  if (newVal === 50 && oldVal < 50 && !celebratedAllStates.value) {
+    celebratedAllStates.value = true
+    showAllStatesOverlay.value = true
+    confetti({
+      particleCount: 250,
+      spread: 120,
+      origin: { y: 0.4 },
+      colors: ['#E63946', '#2D6A4F', '#ffffff', '#ffd700'],
+    })
+  }
+})
+
+// New personal best
+watch(totalFound, (newVal, oldVal) => {
+  if (previousBest.value >= 0 && newVal > previousBest.value && newVal > oldVal && !celebratedHighScore.value) {
+    celebratedHighScore.value = true
+    highScoreCount.value = newVal
+    showHighScoreBanner.value = true
+    confetti({
+      particleCount: 80,
+      spread: 60,
+      origin: { y: 0.1 },
+      colors: ['#ffd700', '#ffa500', '#ffffff'],
+    })
+    setTimeout(() => { showHighScoreBanner.value = false }, 4000)
+  }
+})
 
 function switchRegion(toCanada) {
   if (activeGame.value) {
@@ -118,6 +184,16 @@ function isFound(abbr) {
     <!-- Click-away backdrop -->
     <div v-if="menuOpen" class="fixed inset-0 z-10" @click="menuOpen = false" />
 
+    <!-- High score banner -->
+    <Transition name="slide-down">
+      <div
+        v-if="showHighScoreBanner"
+        class="bg-lp-red text-white text-center py-3 px-4 font-semibold shadow-md z-40"
+      >
+        New High Score — {{ highScoreCount }} plates found!
+      </div>
+    </Transition>
+
     <!-- Progress section -->
     <div class="bg-white dark:bg-gray-800 px-4 pt-3 pb-4 shadow-sm">
       <p class="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">{{ activeGame.name }}</p>
@@ -168,4 +244,45 @@ function isFound(abbr) {
       Go Home
     </button>
   </div>
+
+  <!-- All 50 states overlay -->
+  <Transition name="fade">
+    <div
+      v-if="showAllStatesOverlay"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      @click="showAllStatesOverlay = false"
+    >
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 mx-6 text-center shadow-2xl">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-lp-green/10 flex items-center justify-center">
+          <svg class="w-9 h-9 text-lp-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+        <h2 class="font-fredoka text-3xl text-lp-dark dark:text-gray-100 mb-2">All 50 States!</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">You found every US license plate on this trip.</p>
+        <p class="text-gray-300 dark:text-gray-600 text-xs mt-5">Tap anywhere to continue</p>
+      </div>
+    </div>
+  </Transition>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.4s ease;
+}
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+</style>
