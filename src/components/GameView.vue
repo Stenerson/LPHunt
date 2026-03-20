@@ -40,6 +40,17 @@ const currentItems = computed(() =>
   showingCanada.value ? PROVINCES : STATES
 )
 
+const searchQuery = ref('')
+
+const filteredItems = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return currentItems.value
+  return currentItems.value.filter(item =>
+    item.abbr.toLowerCase().includes(q) ||
+    item.name.toLowerCase().includes(q)
+  )
+})
+
 const currentRegion = computed(() =>
   showingCanada.value ? 'provinces' : 'states'
 )
@@ -144,12 +155,14 @@ watch(totalFound, (newVal, oldVal) => {
 function switchRegion(toCanada) {
   if (activeGame.value) {
     setShowCanada(activeGame.value.id, toCanada)
+    searchQuery.value = ''
   }
 }
 
 function handleToggle(abbr) {
   if (activeGame.value) {
     toggleRegionEntry(activeGame.value.id, abbr, currentRegion.value)
+    searchQuery.value = ''
   }
 }
 
@@ -291,19 +304,50 @@ function isFound(abbr) {
       </button>
     </div>
 
+    <!-- Search bar -->
+    <div class="px-3 pt-3 pb-1">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input
+          v-model="searchQuery"
+          type="search"
+          placeholder="Search states…"
+          class="w-full pl-9 pr-8 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-lp-dark dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-lp-red"
+        />
+        <button
+          v-if="searchQuery"
+          @click="searchQuery = ''"
+          class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          aria-label="Clear search"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <!-- State card grid -->
     <div
       class="flex-1 p-3 grid gap-2 content-start"
       style="grid-template-columns: repeat(auto-fill, minmax(96px, 1fr))"
     >
       <StateCard
-        v-for="item in currentItems"
+        v-for="item in filteredItems"
         :key="item.abbr"
         :abbr="item.abbr"
         :name="item.name"
         :found="isFound(item.abbr)"
         @toggle="handleToggle"
       />
+      <div
+        v-if="filteredItems.length === 0"
+        class="col-span-full text-center text-gray-400 dark:text-gray-500 text-sm py-12"
+      >
+        No states match "<span class="font-medium">{{ searchQuery }}</span>"
+      </div>
     </div>
   </div>
 
