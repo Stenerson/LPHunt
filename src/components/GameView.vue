@@ -332,7 +332,7 @@ function isFound(abbr) {
     <!-- State card grid -->
     <div
       class="flex-1 p-3 grid gap-2 content-start"
-      style="grid-template-columns: repeat(auto-fill, minmax(96px, 1fr))"
+      style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr))"
     >
       <StateCard
         v-for="item in filteredItems"

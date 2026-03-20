@@ -25,14 +25,14 @@ const additionalPct = computed(() =>
       />
       <div
         v-if="additional > 0"
-        class="h-full bg-blue-500 transition-all duration-500 ease-out"
+        class="h-full bg-amber-300 transition-all duration-500 ease-out"
         :style="{ width: `${additionalPct}%` }"
       />
     </div>
     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 text-right">
       <span class="font-semibold text-lp-dark dark:text-gray-100">{{ found }}</span> / {{ total }} found
       <template v-if="additional > 0">
-        · <span class="font-semibold text-blue-500">+{{ additional }}</span> new
+        · <span class="font-semibold text-amber-600">+{{ additional }}</span> new
       </template>
     </p>
   </div>
