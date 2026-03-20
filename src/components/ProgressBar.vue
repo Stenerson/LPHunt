@@ -15,11 +15,8 @@ const pct = computed(() =>
   <div>
     <div class="h-3 rounded-full overflow-hidden bg-gray-200">
       <div
-        class="h-full rounded-full transition-all duration-500 ease-out"
-        :style="{
-          width: `${pct}%`,
-          background: 'linear-gradient(90deg, #E63946 0%, #F4A261 50%, #2D6A4F 100%)',
-        }"
+        class="h-full rounded-full bg-lp-green transition-all duration-500 ease-out"
+        :style="{ width: `${pct}%` }"
       />
     </div>
     <p class="text-sm text-gray-500 mt-1 text-right">
