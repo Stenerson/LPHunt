@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useGame } from '../composables/useGame.js'
 import { STATES } from '../data/states.js'
 import { PROVINCES } from '../data/provinces.js'
@@ -7,7 +7,27 @@ import { encodeGame } from '../composables/useShare.js'
 import ProgressBar from './ProgressBar.vue'
 
 defineEmits(['navigate'])
-const { games, activeId, activeGame, setActiveGame, countFound, deleteGame } = useGame()
+const { games, activeId, activeGame, setActiveGame, countFound, deleteGame, renameGame } = useGame()
+
+const editingGameId = ref(null)
+const editingName = ref('')
+
+async function startRename(game) {
+  editingGameId.value = game.id
+  editingName.value = game.name
+  await nextTick()
+  document.getElementById(`rename-${game.id}`)?.focus()
+}
+
+function commitRename(gameId) {
+  if (editingGameId.value !== gameId) return
+  renameGame(gameId, editingName.value)
+  editingGameId.value = null
+}
+
+function cancelRename() {
+  editingGameId.value = null
+}
 
 const sortedGames = computed(() => [...games.value].reverse())
 
@@ -83,7 +103,30 @@ function doDelete(gameId) {
       >
         <div class="flex items-start justify-between mb-1">
           <div class="flex-1 min-w-0 pr-3">
-            <p class="font-semibold text-lp-dark dark:text-gray-100 truncate">{{ game.name }}</p>
+            <!-- Inline rename input -->
+            <div v-if="editingGameId === game.id" class="flex items-center gap-1 mb-0.5">
+              <input
+                :id="`rename-${game.id}`"
+                v-model="editingName"
+                @keydown.enter="commitRename(game.id)"
+                @keydown.escape="cancelRename"
+                @blur="commitRename(game.id)"
+                class="flex-1 min-w-0 font-semibold text-lp-dark dark:text-gray-100 bg-gray-100 dark:bg-gray-700 rounded-lg px-2 py-0.5 text-sm outline-none focus:ring-2 focus:ring-lp-red"
+              />
+            </div>
+            <!-- Static name + pencil -->
+            <div v-else class="flex items-center gap-1.5 group">
+              <p class="font-semibold text-lp-dark dark:text-gray-100 truncate">{{ game.name }}</p>
+              <button
+                @click.stop="startRename(game)"
+                class="opacity-40 hover:opacity-100 focus:opacity-100 p-2 -m-1 rounded text-gray-400 hover:text-lp-dark dark:hover:text-gray-100 transition-opacity flex-shrink-0"
+                title="Rename game"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.414.586H8v-2.414a2 2 0 01.586-1.414z"/>
+                </svg>
+              </button>
+            </div>
             <p class="text-xs text-gray-400 mt-0.5">
               {{ formatDate(game.createdAt) }}
               &middot; Starting: {{ game.startingState }}

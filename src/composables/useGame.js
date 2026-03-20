@@ -144,6 +144,14 @@ export function useGame() {
     persist()
   }
 
+  function renameGame(gameId, newName) {
+    const game = games.value.find(g => g.id === gameId)
+    if (!game) return
+    const trimmed = newName.trim()
+    if (trimmed) game.name = trimmed
+    persist()
+  }
+
   function setActiveGame(id) {
     activeId.value = id
     storage.setActiveId(id)
@@ -172,6 +180,7 @@ export function useGame() {
     createGame,
     mergeGame,
     importGame,
+    renameGame,
     deleteGame,
     toggleRegionEntry,
     setShowCanada,
