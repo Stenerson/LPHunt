@@ -188,7 +188,7 @@ function isFound(abbr) {
     <Transition name="slide-down">
       <div
         v-if="showHighScoreBanner"
-        class="bg-lp-red text-white text-center py-3 px-4 font-semibold shadow-md z-40"
+        class="bg-lp-green text-white text-center py-3 px-4 font-semibold shadow-md z-40"
       >
         New High Score — {{ highScoreCount }} plates found!
       </div>
