@@ -87,6 +87,25 @@ export function useGame() {
     persist()
   }
 
+  function importGame(sharedData) {
+    const game = {
+      id: crypto.randomUUID(),
+      name: sharedData.name,
+      startingState: sharedData.startingState,
+      includeCanada: sharedData.includeCanada,
+      showCanada: false,
+      createdAt: new Date().toISOString(),
+      endedAt: null,
+      states: sharedData.states,
+      provinces: sharedData.provinces,
+    }
+    games.value.push(game)
+    activeId.value = game.id
+    storage.setActiveId(game.id)
+    persist()
+    return game
+  }
+
   function setActiveGame(id) {
     activeId.value = id
     storage.setActiveId(id)
@@ -113,6 +132,7 @@ export function useGame() {
     activeId,
     activeGame,
     createGame,
+    importGame,
     toggleRegionEntry,
     setShowCanada,
     toggleIncludeCanada,

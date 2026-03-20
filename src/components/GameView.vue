@@ -5,6 +5,7 @@ import { STATES } from '../data/states.js'
 import { PROVINCES } from '../data/provinces.js'
 import { useGame } from '../composables/useGame.js'
 import { useDarkMode } from '../composables/useDarkMode.js'
+import { encodeGame } from '../composables/useShare.js'
 import ProgressBar from './ProgressBar.vue'
 import StateCard from './StateCard.vue'
 
@@ -52,6 +53,17 @@ const previousBest = computed(() => {
     countFound(g, 'states') + (g.includeCanada ? countFound(g, 'provinces') : 0)
   ))
 })
+
+// Share
+const linkCopied = ref(false)
+
+async function shareGame() {
+  const url = window.location.href.split('#')[0] + '#share=' + encodeGame(activeGame.value)
+  await navigator.clipboard.writeText(url)
+  menuOpen.value = false
+  linkCopied.value = true
+  setTimeout(() => { linkCopied.value = false }, 2500)
+}
 
 // Celebration state
 const showAllStatesOverlay = ref(false)
@@ -159,6 +171,15 @@ function isFound(abbr) {
           Past Games
         </button>
         <button
+          @click="shareGame"
+          class="w-full text-left px-4 py-3.5 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 active:bg-gray-100 dark:active:bg-gray-700 flex items-center gap-3"
+        >
+          <svg class="w-5 h-5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+          </svg>
+          Share Game
+        </button>
+        <button
           v-if="activeGame"
           @click="toggleIncludeCanada(activeGame.id)"
           class="w-full text-left px-4 py-3.5 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 active:bg-gray-100 dark:active:bg-gray-700 flex items-center gap-3"
@@ -188,6 +209,16 @@ function isFound(abbr) {
 
     <!-- Click-away backdrop -->
     <div v-if="menuOpen" class="fixed inset-0 z-10" @click="menuOpen = false" />
+
+    <!-- Link copied toast -->
+    <Transition name="slide-down">
+      <div
+        v-if="linkCopied"
+        class="bg-lp-dark text-white text-center py-3 px-4 font-semibold shadow-md z-40"
+      >
+        Link copied to clipboard!
+      </div>
+    </Transition>
 
     <!-- High score banner -->
     <Transition name="slide-down">
