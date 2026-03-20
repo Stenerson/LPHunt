@@ -8,6 +8,11 @@ const { games } = useGame()
 <template>
   <div class="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-12 text-center bg-lp-bg dark:bg-gray-900">
     <div class="mb-10">
+      <div class="flex items-center justify-center mb-4">
+        <svg class="w-16 h-16 text-lp-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
       <h1 class="font-fredoka text-5xl text-lp-dark dark:text-gray-100 mb-3 leading-tight">
         License Plate Hunt
       </h1>
