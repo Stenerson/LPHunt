@@ -134,6 +134,16 @@ export function useGame() {
     return game
   }
 
+  function deleteGame(gameId) {
+    games.value = games.value.filter(g => g.id !== gameId)
+    if (activeId.value === gameId) {
+      const remaining = games.value
+      activeId.value = remaining.length > 0 ? remaining[remaining.length - 1].id : null
+      storage.setActiveId(activeId.value)
+    }
+    persist()
+  }
+
   function setActiveGame(id) {
     activeId.value = id
     storage.setActiveId(id)
@@ -162,6 +172,7 @@ export function useGame() {
     createGame,
     mergeGame,
     importGame,
+    deleteGame,
     toggleRegionEntry,
     setShowCanada,
     toggleIncludeCanada,
