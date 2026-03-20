@@ -14,7 +14,7 @@ defineEmits(['toggle'])
     style="touch-action: manipulation"
     :class="found
       ? 'bg-lp-green text-white shadow-md'
-      : 'bg-white text-lp-dark shadow-sm border border-gray-200'"
+      : 'bg-white dark:bg-gray-800 text-lp-dark dark:text-gray-100 shadow-sm border border-gray-200 dark:border-gray-700'"
   >
     <span class="font-bold text-base leading-none">{{ abbr }}</span>
     <span class="text-[9px] uppercase tracking-normal mt-1 leading-tight text-center opacity-75 w-full px-0.5">{{ name }}</span>

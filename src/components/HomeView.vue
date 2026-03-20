@@ -6,12 +6,12 @@ const { games } = useGame()
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-12 text-center bg-lp-bg">
+  <div class="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-12 text-center bg-lp-bg dark:bg-gray-900">
     <div class="mb-10">
-      <h1 class="font-fredoka text-5xl text-lp-dark mb-3 leading-tight">
+      <h1 class="font-fredoka text-5xl text-lp-dark dark:text-gray-100 mb-3 leading-tight">
         License Plate Hunt
       </h1>
-      <p class="text-gray-500 text-lg">How many states can you spot?</p>
+      <p class="text-gray-500 dark:text-gray-400 text-lg">How many states can you spot?</p>
     </div>
 
     <div class="flex flex-col gap-4 w-full max-w-xs">
@@ -25,7 +25,7 @@ const { games } = useGame()
       <button
         v-if="games.length > 0"
         @click="$emit('navigate', 'past-games')"
-        class="bg-white text-lp-dark font-semibold text-lg py-4 px-6 rounded-2xl shadow-sm border border-gray-200 active:scale-95 transition-all"
+        class="bg-white dark:bg-gray-800 text-lp-dark dark:text-gray-100 font-semibold text-lg py-4 px-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 active:scale-95 transition-all"
       >
         View Past Games
       </button>

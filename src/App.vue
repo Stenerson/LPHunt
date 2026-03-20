@@ -1,12 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useGame } from './composables/useGame.js'
+import { useDarkMode } from './composables/useDarkMode.js'
 import HomeView from './components/HomeView.vue'
 import NewGameView from './components/NewGameView.vue'
 import GameView from './components/GameView.vue'
 import PastGamesView from './components/PastGamesView.vue'
 
 const { activeGame } = useGame()
+const { isDark } = useDarkMode()
 const currentView = ref('home')
 
 onMounted(() => {
@@ -19,7 +21,7 @@ function navigate(view) {
 </script>
 
 <template>
-  <div class="min-h-[100dvh] bg-lp-bg">
+  <div :class="['min-h-[100dvh] bg-lp-bg dark:bg-gray-900', { dark: isDark }]">
     <HomeView
       v-if="currentView === 'home'"
       @navigate="navigate"

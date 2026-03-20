@@ -32,7 +32,7 @@ function formatDate(isoString) {
 </script>
 
 <template>
-  <div class="flex flex-col min-h-[100dvh] bg-lp-bg">
+  <div class="flex flex-col min-h-[100dvh] bg-lp-bg dark:bg-gray-900">
     <header class="bg-lp-dark text-white px-4 py-4 flex items-center gap-3">
       <button
         @click="$emit('navigate', activeGame ? 'game' : 'home')"
@@ -51,12 +51,12 @@ function formatDate(isoString) {
       <div
         v-for="game in sortedGames"
         :key="game.id"
-        class="bg-white rounded-2xl shadow-sm p-4 border"
-        :class="game.id === activeId ? 'border-lp-green' : 'border-gray-100'"
+        class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border"
+        :class="game.id === activeId ? 'border-lp-green' : 'border-gray-100 dark:border-gray-700'"
       >
         <div class="flex items-start justify-between mb-1">
           <div class="flex-1 min-w-0 pr-3">
-            <p class="font-semibold text-lp-dark truncate">{{ game.name }}</p>
+            <p class="font-semibold text-lp-dark dark:text-gray-100 truncate">{{ game.name }}</p>
             <p class="text-xs text-gray-400 mt-0.5">
               {{ formatDate(game.createdAt) }}
               &middot; Starting: {{ game.startingState }}

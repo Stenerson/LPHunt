@@ -3,11 +3,13 @@ import { ref, computed } from 'vue'
 import { STATES } from '../data/states.js'
 import { PROVINCES } from '../data/provinces.js'
 import { useGame } from '../composables/useGame.js'
+import { useDarkMode } from '../composables/useDarkMode.js'
 import ProgressBar from './ProgressBar.vue'
 import StateCard from './StateCard.vue'
 
 defineEmits(['navigate'])
 const { activeGame, toggleRegionEntry, setShowCanada, countFound } = useGame()
+const { isDark, toggle: toggleDark } = useDarkMode()
 
 const menuOpen = ref(false)
 
@@ -47,7 +49,7 @@ function isFound(abbr) {
 </script>
 
 <template>
-  <div v-if="activeGame" class="flex flex-col min-h-[100dvh] bg-lp-bg">
+  <div v-if="activeGame" class="flex flex-col min-h-[100dvh] bg-lp-bg dark:bg-gray-900">
 
     <!-- Header -->
     <header class="relative bg-lp-dark text-white px-4 py-4 flex items-center justify-between sticky top-0 z-20">
@@ -65,19 +67,25 @@ function isFound(abbr) {
       <!-- Dropdown menu -->
       <div
         v-if="menuOpen"
-        class="absolute right-0 top-full w-48 bg-white shadow-xl z-30 rounded-bl-2xl overflow-hidden"
+        class="absolute right-0 top-full w-48 bg-white dark:bg-gray-800 shadow-xl z-30 rounded-bl-2xl overflow-hidden"
       >
         <button
           @click="menuOpen = false; $emit('navigate', 'new-game')"
-          class="w-full text-left px-4 py-4 text-lp-dark font-medium hover:bg-gray-50 border-b border-gray-100 active:bg-gray-100"
+          class="w-full text-left px-4 py-4 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 active:bg-gray-100 dark:active:bg-gray-700"
         >
           New Game
         </button>
         <button
           @click="menuOpen = false; $emit('navigate', 'past-games')"
-          class="w-full text-left px-4 py-4 text-lp-dark font-medium hover:bg-gray-50 active:bg-gray-100"
+          class="w-full text-left px-4 py-4 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 active:bg-gray-100 dark:active:bg-gray-700"
         >
           Past Games
+        </button>
+        <button
+          @click="toggleDark"
+          class="w-full text-left px-4 py-4 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-700"
+        >
+          {{ isDark ? 'Light Mode' : 'Dark Mode' }}
         </button>
       </div>
     </header>
@@ -86,13 +94,13 @@ function isFound(abbr) {
     <div v-if="menuOpen" class="fixed inset-0 z-10" @click="menuOpen = false" />
 
     <!-- Progress section -->
-    <div class="bg-white px-4 pt-3 pb-4 shadow-sm">
+    <div class="bg-white dark:bg-gray-800 px-4 pt-3 pb-4 shadow-sm">
       <p class="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">{{ activeGame.name }}</p>
       <ProgressBar :found="foundCount" :total="totalCount" />
     </div>
 
     <!-- Region tabs (only if Canada enabled) -->
-    <div v-if="activeGame.includeCanada" class="flex bg-white border-b border-gray-100 px-4 gap-6">
+    <div v-if="activeGame.includeCanada" class="flex bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-4 gap-6">
       <button
         @click="switchRegion(false)"
         class="py-3 text-sm font-semibold border-b-2 transition-colors"

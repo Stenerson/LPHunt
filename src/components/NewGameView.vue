@@ -22,7 +22,7 @@ function submit() {
 </script>
 
 <template>
-  <div class="flex flex-col min-h-[100dvh] bg-lp-bg">
+  <div class="flex flex-col min-h-[100dvh] bg-lp-bg dark:bg-gray-900">
     <header class="bg-lp-dark text-white px-4 py-4 flex items-center gap-3">
       <button
         v-if="activeGame"
@@ -37,7 +37,7 @@ function submit() {
     <!-- Warning banner when a game is already active -->
     <div
       v-if="activeGame"
-      class="bg-amber-50 border-b border-amber-200 px-4 py-3 text-sm text-amber-800"
+      class="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-700/50 px-4 py-3 text-sm text-amber-800 dark:text-amber-300"
     >
       You have a game in progress with
       <strong>{{ activeFoundCount }} {{ activeFoundCount === 1 ? 'plate' : 'plates' }}</strong> found.
@@ -45,15 +45,15 @@ function submit() {
     </div>
 
     <div class="flex-1 flex flex-col justify-center px-6 py-8 max-w-md mx-auto w-full">
-      <h2 class="font-fredoka text-3xl text-lp-dark mb-2">Where are you starting?</h2>
+      <h2 class="font-fredoka text-3xl text-lp-dark dark:text-gray-100 mb-2">Where are you starting?</h2>
       <p class="text-gray-400 text-sm mb-8">We'll use this to calculate plate rarity in a future update.</p>
 
       <div class="space-y-5">
         <div>
-          <label class="block text-sm font-medium text-gray-600 mb-2">Starting state</label>
+          <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Starting state</label>
           <select
             v-model="startingState"
-            class="w-full border border-gray-300 rounded-xl py-3 px-4 text-lp-dark text-base bg-white focus:outline-none focus:ring-2 focus:ring-lp-red appearance-none"
+            class="w-full border border-gray-300 dark:border-gray-600 rounded-xl py-3 px-4 text-lp-dark dark:text-gray-100 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-lp-red appearance-none"
           >
             <option v-for="s in STATES" :key="s.abbr" :value="s.abbr">
               {{ s.name }}
@@ -68,7 +68,7 @@ function submit() {
             class="w-5 h-5 rounded accent-lp-red flex-shrink-0"
           />
           <div>
-            <span class="text-lp-dark font-medium">Include Canadian provinces</span>
+            <span class="text-lp-dark dark:text-gray-100 font-medium">Include Canadian provinces</span>
             <p class="text-gray-400 text-xs mt-0.5">Adds 13 provinces &amp; territories</p>
           </div>
         </label>
