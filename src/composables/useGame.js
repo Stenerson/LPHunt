@@ -68,6 +68,25 @@ export function useGame() {
     persist()
   }
 
+  function toggleIncludeCanada(gameId) {
+    const game = games.value.find(g => g.id === gameId)
+    if (!game) return
+    if (game.includeCanada) {
+      game.includeCanada = false
+      game.showCanada = false
+    } else {
+      game.includeCanada = true
+      // Only initialize provinces that don't already exist (preserves any prior data)
+      if (!game.provinces) game.provinces = {}
+      PROVINCES.forEach(p => {
+        if (!game.provinces[p.abbr]) {
+          game.provinces[p.abbr] = { found: false, foundAt: null }
+        }
+      })
+    }
+    persist()
+  }
+
   function setActiveGame(id) {
     activeId.value = id
     storage.setActiveId(id)
@@ -96,6 +115,7 @@ export function useGame() {
     createGame,
     toggleRegionEntry,
     setShowCanada,
+    toggleIncludeCanada,
     setActiveGame,
     countFound,
     countTotal,

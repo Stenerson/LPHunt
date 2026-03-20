@@ -8,7 +8,7 @@ import ProgressBar from './ProgressBar.vue'
 import StateCard from './StateCard.vue'
 
 defineEmits(['navigate'])
-const { activeGame, toggleRegionEntry, setShowCanada, countFound } = useGame()
+const { activeGame, toggleRegionEntry, setShowCanada, toggleIncludeCanada, countFound } = useGame()
 const { isDark, toggle: toggleDark } = useDarkMode()
 
 const menuOpen = ref(false)
@@ -67,24 +67,49 @@ function isFound(abbr) {
       <!-- Dropdown menu -->
       <div
         v-if="menuOpen"
-        class="absolute right-0 top-full w-48 bg-white dark:bg-gray-800 shadow-xl z-30 rounded-bl-2xl overflow-hidden"
+        class="absolute right-0 top-full w-52 bg-white dark:bg-gray-800 shadow-xl z-30 rounded-bl-2xl overflow-hidden"
       >
         <button
           @click="menuOpen = false; $emit('navigate', 'new-game')"
-          class="w-full text-left px-4 py-4 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 active:bg-gray-100 dark:active:bg-gray-700"
+          class="w-full text-left px-4 py-3.5 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 active:bg-gray-100 dark:active:bg-gray-700 flex items-center gap-3"
         >
+          <svg class="w-5 h-5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
           New Game
         </button>
         <button
           @click="menuOpen = false; $emit('navigate', 'past-games')"
-          class="w-full text-left px-4 py-4 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 active:bg-gray-100 dark:active:bg-gray-700"
+          class="w-full text-left px-4 py-3.5 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 active:bg-gray-100 dark:active:bg-gray-700 flex items-center gap-3"
         >
+          <svg class="w-5 h-5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
           Past Games
         </button>
         <button
-          @click="toggleDark"
-          class="w-full text-left px-4 py-4 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-700"
+          v-if="activeGame"
+          @click="toggleIncludeCanada(activeGame.id)"
+          class="w-full text-left px-4 py-3.5 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 active:bg-gray-100 dark:active:bg-gray-700 flex items-center gap-3"
         >
+          <!-- Globe -->
+          <svg class="w-5 h-5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          {{ activeGame.includeCanada ? 'Remove Canada' : 'Add Canada' }}
+        </button>
+        <button
+          @click="toggleDark"
+          class="w-full text-left px-4 py-3.5 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-700 flex items-center gap-3"
+        >
+          <!-- Sun icon -->
+          <svg v-if="isDark" class="w-5 h-5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+          </svg>
+          <!-- Moon icon -->
+          <svg v-else class="w-5 h-5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
           {{ isDark ? 'Light Mode' : 'Dark Mode' }}
         </button>
       </div>
