@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import confetti from 'canvas-confetti'
+import NoSleep from 'nosleep.js'
 import { STATES } from '../data/states.js'
 import { PROVINCES } from '../data/provinces.js'
 import { useGame } from '../composables/useGame.js'
@@ -15,23 +16,22 @@ const { isDark, toggle: toggleDark } = useDarkMode()
 
 const menuOpen = ref(false)
 
-// Keep screen awake while playing
-let wakeLock = null
-async function acquireWakeLock() {
-  if (!('wakeLock' in navigator)) return
-  try {
-    wakeLock = await navigator.wakeLock.request('screen')
-  } catch {}
+// Keep screen awake while playing (Wake Lock API on Android/desktop, video hack on iOS)
+const noSleep = new NoSleep()
+function enableNoSleep() {
+  noSleep.enable()
+  document.removeEventListener('touchstart', enableNoSleep)
+  document.removeEventListener('click', enableNoSleep)
 }
 onMounted(() => {
-  acquireWakeLock()
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') acquireWakeLock()
-  })
+  // NoSleep requires a user gesture on iOS before it can play video
+  document.addEventListener('touchstart', enableNoSleep, { once: true })
+  document.addEventListener('click', enableNoSleep, { once: true })
 })
 onUnmounted(() => {
-  wakeLock?.release()
-  wakeLock = null
+  noSleep.disable()
+  document.removeEventListener('touchstart', enableNoSleep)
+  document.removeEventListener('click', enableNoSleep)
 })
 
 const showingCanada = computed(() => activeGame.value?.showCanada ?? false)
