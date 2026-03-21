@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Plate background -->
+  <rect width="512" height="512" fill="#F5F0E8"/>
+
+  <!-- Inner border inset -->
+  <rect x="24" y="24" width="464" height="464" rx="12" fill="none" stroke="#ADB5BD" stroke-width="6"/>
+
+  <!-- Bolt holes -->
+  <circle cx="60" cy="60" r="14" fill="#ADB5BD"/>
+  <circle cx="452" cy="60" r="14" fill="#ADB5BD"/>
+  <circle cx="60" cy="452" r="14" fill="#ADB5BD"/>
+  <circle cx="452" cy="452" r="14" fill="#ADB5BD"/>
+
+  <!-- Magnifying glass -->
+  <circle cx="256" cy="256" r="96" fill="none" stroke="#212529" stroke-width="38"/>
+  <line x1="326" y1="326" x2="416" y2="416" stroke="#212529" stroke-width="38" stroke-linecap="round"/>
+</svg>
