@@ -109,7 +109,7 @@ function saveAndPlay() {
     <!-- Progress -->
     <div class="bg-white dark:bg-gray-800 px-4 pt-3 pb-4 shadow-sm">
       <div class="flex items-center gap-1.5 mb-2">
-        <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Shared game &middot; {{ foundCount }}/{{ totalCount }} found</p>
+        <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">{{ sharedGame.name || 'Shared game' }} &middot; {{ foundCount }}/{{ totalCount }} found</p>
         <button @click="showInfoModal = true" aria-label="Show guide" class="text-gray-300 dark:text-gray-600 hover:text-gray-400 dark:hover:text-gray-400 transition-colors">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -229,7 +229,7 @@ function saveAndPlay() {
       <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 mx-6 shadow-2xl max-w-sm w-full">
 
         <!-- Header -->
-        <h2 class="font-fredoka text-2xl text-lp-dark dark:text-gray-100 mb-1">Friend's Game</h2>
+        <h2 class="font-fredoka text-2xl text-lp-dark dark:text-gray-100 mb-1">{{ sharedGame.name || "Friend's Game" }}</h2>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Here's how to read the color coding:</p>
 
         <!-- New plates callout (only when comparing to an active game) -->

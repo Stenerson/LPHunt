@@ -33,7 +33,7 @@ export function decodeGame(encoded) {
     }
 
     return {
-      name: data.n,
+      name: data.n || null,
       startingState: data.s,
       includeCanada: !!data.c,
       states,
