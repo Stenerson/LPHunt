@@ -41,6 +41,7 @@ const currentItems = computed(() =>
 )
 
 const searchQuery = ref('')
+const sortUnfoundFirst = ref(false)
 
 const filteredItems = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
@@ -50,6 +51,9 @@ const filteredItems = computed(() => {
     item.name.toLowerCase().includes(q)
   )
 })
+
+const unfoundItems = computed(() => filteredItems.value.filter(item => !isFound(item.abbr)))
+const foundItems   = computed(() => filteredItems.value.filter(item =>  isFound(item.abbr)))
 
 const currentRegion = computed(() =>
   showingCanada.value ? 'provinces' : 'states'
@@ -165,6 +169,7 @@ function switchRegion(toCanada) {
   if (activeGame.value) {
     setShowCanada(activeGame.value.id, toCanada)
     searchQuery.value = ''
+    sortUnfoundFirst.value = false
   }
 }
 
@@ -326,9 +331,9 @@ function isFound(abbr) {
       </button>
     </div>
 
-    <!-- Search bar -->
-    <div class="px-3 pt-3 pb-1">
-      <div class="relative">
+    <!-- Search bar + sort toggle -->
+    <div class="px-3 pt-3 pb-1 flex items-center gap-2">
+      <div class="relative flex-1">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
@@ -349,6 +354,20 @@ function isFound(abbr) {
           </svg>
         </button>
       </div>
+      <!-- Unfound-first sort toggle -->
+      <button
+        @click="sortUnfoundFirst = !sortUnfoundFirst"
+        :aria-pressed="sortUnfoundFirst"
+        aria-label="Show unfound first"
+        class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl border transition-colors"
+        :class="sortUnfoundFirst
+          ? 'bg-lp-red/10 border-lp-red text-lp-red'
+          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9M3 12h5m10 4v-8m0 0l-3 3m3-3l3 3"/>
+        </svg>
+      </button>
     </div>
 
     <!-- State card grid -->
@@ -356,15 +375,58 @@ function isFound(abbr) {
       class="flex-1 p-3 grid gap-2 content-start"
       style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr))"
     >
-      <StateCard
-        v-for="item in filteredItems"
-        :key="item.abbr"
-        :abbr="item.abbr"
-        :name="item.name"
-        :found="isFound(item.abbr)"
-        @toggle="(abbr, rect) => handleToggle(abbr, rect)"
-        @hint="handleHint"
-      />
+      <template v-if="sortUnfoundFirst">
+        <!-- Unfound header -->
+        <div class="col-span-full flex items-center gap-3 pb-1">
+          <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+          <span class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+            Remaining · {{ unfoundItems.length }}
+          </span>
+          <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+        </div>
+        <!-- Unfound plates -->
+        <StateCard
+          v-for="item in unfoundItems"
+          :key="item.abbr"
+          :abbr="item.abbr"
+          :name="item.name"
+          :found="false"
+          @toggle="(abbr, rect) => handleToggle(abbr, rect)"
+          @hint="handleHint"
+        />
+        <!-- Divider between unfound and found -->
+        <div
+          v-if="foundItems.length > 0"
+          class="col-span-full flex items-center gap-3 pt-1"
+        >
+          <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+          <span class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+            Found · {{ foundItems.length }}
+          </span>
+          <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+        </div>
+        <!-- Found plates -->
+        <StateCard
+          v-for="item in foundItems"
+          :key="item.abbr"
+          :abbr="item.abbr"
+          :name="item.name"
+          :found="true"
+          @toggle="(abbr, rect) => handleToggle(abbr, rect)"
+          @hint="handleHint"
+        />
+      </template>
+      <template v-else>
+        <StateCard
+          v-for="item in filteredItems"
+          :key="item.abbr"
+          :abbr="item.abbr"
+          :name="item.name"
+          :found="isFound(item.abbr)"
+          @toggle="(abbr, rect) => handleToggle(abbr, rect)"
+          @hint="handleHint"
+        />
+      </template>
       <div
         v-if="filteredItems.length === 0"
         class="col-span-full text-center text-gray-400 dark:text-gray-500 text-sm py-12"
