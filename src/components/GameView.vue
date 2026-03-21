@@ -168,10 +168,23 @@ function switchRegion(toCanada) {
   }
 }
 
-function handleToggle(abbr) {
-  if (activeGame.value) {
-    toggleRegionEntry(activeGame.value.id, abbr, currentRegion.value)
-    searchQuery.value = ''
+function handleToggle(abbr, rect) {
+  if (!activeGame.value) return
+  const wasFound = activeGame.value[currentRegion.value]?.[abbr]?.found ?? false
+  toggleRegionEntry(activeGame.value.id, abbr, currentRegion.value)
+  searchQuery.value = ''
+  if (!wasFound) {
+    const x = rect ? (rect.left + rect.width / 2) / window.innerWidth : 0.5
+    const y = rect ? (rect.top + rect.height / 2) / window.innerHeight : 0.65
+    confetti({
+      particleCount: 28,
+      spread: 55,
+      startVelocity: 22,
+      ticks: 55,
+      origin: { x, y },
+      colors: ['#E63946', '#2D6A4F', '#ffffff', '#ffd700'],
+      scalar: 0.75,
+    })
   }
 }
 
@@ -349,7 +362,7 @@ function isFound(abbr) {
         :abbr="item.abbr"
         :name="item.name"
         :found="isFound(item.abbr)"
-        @toggle="handleToggle"
+        @toggle="(abbr, rect) => handleToggle(abbr, rect)"
         @hint="handleHint"
       />
       <div

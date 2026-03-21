@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
   abbr: { type: String, required: true },
@@ -7,6 +7,15 @@ const props = defineProps({
   found: { type: Boolean, required: true },
 })
 const emit = defineEmits(['toggle', 'hint'])
+const cardEl = ref(null)
+
+const justFound = ref(false)
+watch(() => props.found, (newVal, oldVal) => {
+  if (newVal && !oldVal) {
+    justFound.value = true
+    setTimeout(() => { justFound.value = false }, 500)
+  }
+})
 
 const HOLD_MS = 600
 let pressTimer = null
@@ -37,7 +46,7 @@ function onClick() {
     return
   }
   if (!props.found) {
-    emit('toggle', props.abbr)
+    emit('toggle', props.abbr, cardEl.value?.getBoundingClientRect())
   } else {
     emit('hint') // tell parent to show "hold to unselect" toast
   }
@@ -46,6 +55,7 @@ function onClick() {
 
 <template>
   <button
+    ref="cardEl"
     @click="onClick"
     @pointerdown="onPointerDown"
     @pointerup="onPointerUp"
@@ -57,6 +67,7 @@ function onClick() {
         ? 'bg-white border-lp-green shadow-md'
         : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm active:scale-95',
       found && holding ? 'scale-95 opacity-60' : '',
+      justFound ? 'plate-pop' : '',
     ]"
     style="touch-action: manipulation"
   >
@@ -105,3 +116,16 @@ function onClick() {
     />
   </button>
 </template>
+
+<style scoped>
+@keyframes plate-pop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.18); }
+  65%  { transform: scale(0.94); }
+  85%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.plate-pop {
+  animation: plate-pop 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+</style>
