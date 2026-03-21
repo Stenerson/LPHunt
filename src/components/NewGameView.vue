@@ -6,7 +6,7 @@ import { useGame } from '../composables/useGame.js'
 const emit = defineEmits(['navigate'])
 const { activeGame, createGame, countFound } = useGame()
 
-const startingState = ref(STATES[7].abbr) // Default: Delaware (middle of list)
+const startingState = ref('')
 const includeCanada = ref(false)
 
 const activeFoundCount = computed(() => {
@@ -53,8 +53,10 @@ function submit() {
           <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Starting state</label>
           <select
             v-model="startingState"
-            class="w-full border border-gray-300 dark:border-gray-600 rounded-xl py-3 px-4 text-lp-dark dark:text-gray-100 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-lp-red appearance-none"
+            class="w-full border border-gray-300 dark:border-gray-600 rounded-xl py-3 px-4 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-lp-red appearance-none"
+            :class="startingState ? 'text-lp-dark dark:text-gray-100' : 'text-gray-400'"
           >
+            <option value="" disabled>Select a state…</option>
             <option v-for="s in STATES" :key="s.abbr" :value="s.abbr">
               {{ s.name }}
             </option>
@@ -75,7 +77,9 @@ function submit() {
 
         <button
           @click="submit"
-          class="w-full bg-lp-red text-white font-semibold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition-all mt-2"
+          :disabled="!startingState"
+          class="w-full bg-lp-red text-white font-semibold text-lg py-4 rounded-2xl shadow-lg transition-all mt-2"
+          :class="startingState ? 'active:scale-95' : 'opacity-40 cursor-not-allowed'"
         >
           Let's Go!
         </button>
