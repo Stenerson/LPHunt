@@ -14,6 +14,7 @@ const emit = defineEmits(['navigate', 'merge'])
 const { importGame, mergeGame, activeGame } = useGame()
 const { isDark, toggle: toggleDark } = useDarkMode()
 const showingCanada = ref(false)
+const showInfoModal = ref(true)
 
 const currentItems = computed(() => showingCanada.value ? PROVINCES : STATES)
 const currentRegion = computed(() => showingCanada.value ? 'provinces' : 'states')
@@ -107,7 +108,14 @@ function saveAndPlay() {
 
     <!-- Progress -->
     <div class="bg-white dark:bg-gray-800 px-4 pt-3 pb-4 shadow-sm">
-      <p class="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Shared game &middot; {{ foundCount }}/{{ totalCount }} found</p>
+      <div class="flex items-center gap-1.5 mb-2">
+        <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Shared game &middot; {{ foundCount }}/{{ totalCount }} found</p>
+        <button @click="showInfoModal = true" aria-label="Show guide" class="text-gray-300 dark:text-gray-600 hover:text-gray-400 dark:hover:text-gray-400 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </button>
+      </div>
       <ProgressBar :found="myFoundCount" :total="totalCount" :additional="newCount" />
     </div>
 
@@ -210,4 +218,115 @@ function saveAndPlay() {
       </button>
     </div>
   </div>
+
+  <!-- Shared game explainer modal -->
+  <Transition name="fade">
+    <div
+      v-if="showInfoModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      @click.self="showInfoModal = false"
+    >
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 mx-6 shadow-2xl max-w-sm w-full">
+
+        <!-- Header -->
+        <h2 class="font-fredoka text-2xl text-lp-dark dark:text-gray-100 mb-1">Friend's Game</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Here's how to read the color coding:</p>
+
+        <!-- New plates callout (only when comparing to an active game) -->
+        <div
+          v-if="activeGame && newCount > 0"
+          class="flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-2xl px-4 py-3 mb-4"
+        >
+          <span class="text-2xl leading-none">🎉</span>
+          <p class="text-sm text-amber-800 dark:text-amber-300">
+            Your friend found
+            <strong>{{ newCount }} plate{{ newCount === 1 ? '' : 's' }}</strong>
+            you haven't spotted yet!
+          </p>
+        </div>
+        <div
+          v-else-if="activeGame && newCount === 0"
+          class="flex items-center gap-3 bg-lp-green/10 border border-lp-green/30 rounded-2xl px-4 py-3 mb-4"
+        >
+          <span class="text-2xl leading-none">✅</span>
+          <p class="text-sm text-lp-green font-medium">You've already found everything they have!</p>
+        </div>
+
+        <!-- Color legend -->
+        <div class="flex flex-col gap-3 mb-5">
+
+          <!-- Amber: new for you (only when activeGame exists) -->
+          <div v-if="activeGame" class="flex items-center gap-3">
+            <div class="w-16 h-8 rounded-lg overflow-hidden border-2 border-amber-200 shadow-sm flex-shrink-0 flex flex-col">
+              <div class="h-2 w-full bg-amber-200"></div>
+              <div class="flex-1 bg-amber-100 flex items-center justify-center">
+                <span class="font-black text-xs text-lp-dark leading-none">NY</span>
+              </div>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-300">Your friend found it — <strong class="text-lp-dark dark:text-gray-100">new for you</strong></p>
+          </div>
+
+          <!-- Green: found (by either or both) -->
+          <div class="flex items-center gap-3">
+            <div class="w-16 h-8 rounded-lg overflow-hidden border-2 border-lp-green shadow-sm flex-shrink-0 flex flex-col">
+              <div class="h-2 w-full bg-lp-green"></div>
+              <div class="flex-1 bg-white dark:bg-gray-700 flex items-center justify-center">
+                <span class="font-black text-xs text-lp-dark dark:text-gray-100 leading-none">CA</span>
+              </div>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              {{ activeGame ? 'Found by you or both of you' : 'Found by your friend' }}
+            </p>
+          </div>
+
+          <!-- Gray: not found -->
+          <div class="flex items-center gap-3">
+            <div class="w-16 h-8 rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600 shadow-sm flex-shrink-0 flex flex-col">
+              <div class="h-2 w-full bg-gray-300 dark:bg-gray-600"></div>
+              <div class="flex-1 bg-white dark:bg-gray-800 flex items-center justify-center">
+                <span class="font-black text-xs text-gray-400 leading-none">TX</span>
+              </div>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-300">Not found yet</p>
+          </div>
+
+        </div>
+
+        <!-- Action explanations -->
+        <div class="border-t border-gray-100 dark:border-gray-700 pt-4 mb-5 flex flex-col gap-2.5">
+          <div v-if="activeGame" class="flex items-start gap-3">
+            <span class="text-base leading-none mt-0.5">🔀</span>
+            <p class="text-sm text-gray-600 dark:text-gray-300"><strong class="text-lp-dark dark:text-gray-100">Merge into My Game</strong> — adds their new plates to your current game</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-base leading-none mt-0.5">▶️</span>
+            <p class="text-sm text-gray-600 dark:text-gray-300"><strong class="text-lp-dark dark:text-gray-100">Continue as New Game</strong> — starts fresh from their progress</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-base leading-none mt-0.5">← </span>
+            <p class="text-sm text-gray-600 dark:text-gray-300"><strong class="text-lp-dark dark:text-gray-100">Back arrow</strong> — just browse, no changes to your game</p>
+          </div>
+        </div>
+
+        <button
+          @click="showInfoModal = false"
+          class="w-full bg-lp-dark dark:bg-gray-700 text-white font-semibold py-3 rounded-2xl active:scale-95 transition-all"
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+  </Transition>
 </template>
+
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
