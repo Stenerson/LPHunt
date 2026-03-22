@@ -99,16 +99,23 @@ async function shareBack() {
   if (navigator.share) {
     try {
       await navigator.share({ url })
+      finishMerge()
     } catch (e) {
       if (e.name !== 'AbortError') {
         const ok = await copyToClipboard(url)
-        if (ok) { shareBackCopied.value = true }
+        if (ok) {
+          shareBackCopied.value = true
+          setTimeout(finishMerge, 1200)
+        }
       }
     }
     return
   }
   const ok = await copyToClipboard(url)
-  if (ok) { shareBackCopied.value = true }
+  if (ok) {
+    shareBackCopied.value = true
+    setTimeout(finishMerge, 1200)
+  }
 }
 
 function finishMerge() {
