@@ -92,7 +92,7 @@ const previousBest = computed(() => {
 const linkCopied = ref(false)
 
 async function shareGame() {
-  const url = window.location.href.split('#')[0] + '#share=' + encodeGame(activeGame.value)
+  const url = window.location.href.split('#')[0] + '#share/' + encodeGame(activeGame.value)
   menuOpen.value = false
 
   if (navigator.share) {

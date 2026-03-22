@@ -16,7 +16,7 @@ const sharedGameData = ref(null)
 
 function tryHandleShareHash() {
   const hash = window.location.hash
-  if (hash.startsWith('#share=')) {
+  if (hash.startsWith('#share=') || hash.startsWith('#share/')) {
     const encoded = hash.slice(7)
     const data = decodeGame(encoded)
     if (data) {
