@@ -41,7 +41,8 @@ const currentItems = computed(() =>
 )
 
 const searchQuery = ref('')
-const sortUnfoundFirst = ref(false)
+const sortUnfoundFirst = ref(localStorage.getItem('lphunt_sort_unfound_first') === '1')
+watch(sortUnfoundFirst, v => localStorage.setItem('lphunt_sort_unfound_first', v ? '1' : '0'))
 
 const filteredItems = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
@@ -221,7 +222,6 @@ function switchRegion(toCanada) {
   if (activeGame.value) {
     setShowCanada(activeGame.value.id, toCanada)
     searchQuery.value = ''
-    sortUnfoundFirst.value = false
   }
 }
 
