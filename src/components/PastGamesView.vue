@@ -122,7 +122,7 @@ async function copyToClipboard(url) {
 }
 
 async function shareGame(game) {
-  const url = window.location.href.split('#')[0] + '#share/' + encodeGame(game)
+  const url = window.location.href.split(/[#?]/)[0] + '?share=' + encodeGame(game)
   if (navigator.share) {
     try {
       await navigator.share({ url })

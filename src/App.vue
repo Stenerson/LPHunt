@@ -15,6 +15,20 @@ const currentView = ref('home')
 const sharedGameData = ref(null)
 
 function tryHandleShareHash() {
+  // New format: ?share=... (query param — survives iOS link previews intact)
+  const params = new URLSearchParams(window.location.search)
+  const qEncoded = params.get('share')
+  if (qEncoded) {
+    const data = decodeGame(qEncoded)
+    if (data) {
+      sharedGameData.value = data
+      currentView.value = 'shared-game'
+      history.replaceState(null, '', window.location.pathname)
+      return true
+    }
+  }
+
+  // Legacy format: #share/ or #share= (hash — kept for old links)
   const hash = window.location.hash
   if (hash.startsWith('#share=') || hash.startsWith('#share/')) {
     const encoded = hash.slice(7)
@@ -22,7 +36,7 @@ function tryHandleShareHash() {
     if (data) {
       sharedGameData.value = data
       currentView.value = 'shared-game'
-      history.replaceState(null, '', window.location.pathname + window.location.search)
+      history.replaceState(null, '', window.location.pathname)
       return true
     }
   }

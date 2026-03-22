@@ -116,7 +116,7 @@ async function copyToClipboard(url) {
 }
 
 async function shareGame() {
-  const url = window.location.href.split('#')[0] + '#share/' + encodeGame(activeGame.value)
+  const url = window.location.href.split(/[#?]/)[0] + '?share=' + encodeGame(activeGame.value)
 
   if (navigator.share) {
     showShareModal.value = false
