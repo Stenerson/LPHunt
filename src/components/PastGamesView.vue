@@ -99,6 +99,28 @@ function formatDate(isoString) {
   })
 }
 
+async function copyToClipboard(url) {
+  try {
+    await navigator.clipboard.writeText(url)
+    return true
+  } catch {
+    try {
+      const ta = document.createElement('textarea')
+      ta.value = url
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.focus()
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      return true
+    } catch {
+      return false
+    }
+  }
+}
+
 async function shareGame(game) {
   const url = window.location.href.split('#')[0] + '#share/' + encodeGame(game)
   if (navigator.share) {
@@ -106,16 +128,18 @@ async function shareGame(game) {
       await navigator.share({ url })
     } catch (e) {
       if (e.name !== 'AbortError') {
-        await navigator.clipboard.writeText(url)
+        await copyToClipboard(url)
         copiedGameId.value = game.id
         setTimeout(() => { copiedGameId.value = null }, 2000)
       }
     }
     return
   }
-  await navigator.clipboard.writeText(url)
-  copiedGameId.value = game.id
-  setTimeout(() => { copiedGameId.value = null }, 2000)
+  const ok = await copyToClipboard(url)
+  if (ok) {
+    copiedGameId.value = game.id
+    setTimeout(() => { copiedGameId.value = null }, 2000)
+  }
 }
 
 function doDelete(gameId) {

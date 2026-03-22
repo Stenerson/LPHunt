@@ -91,16 +91,39 @@ const previousBest = computed(() => {
 // Share
 const linkCopied = ref(false)
 
+async function copyToClipboard(url) {
+  try {
+    await navigator.clipboard.writeText(url)
+    return true
+  } catch {
+    // Fallback for when clipboard API is unavailable or document isn't focused
+    try {
+      const ta = document.createElement('textarea')
+      ta.value = url
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.focus()
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      return true
+    } catch {
+      return false
+    }
+  }
+}
+
 async function shareGame() {
   const url = window.location.href.split('#')[0] + '#share/' + encodeGame(activeGame.value)
-  menuOpen.value = false
 
   if (navigator.share) {
+    menuOpen.value = false
     try {
       await navigator.share({ url })
     } catch (e) {
       if (e.name !== 'AbortError') {
-        await navigator.clipboard.writeText(url)
+        await copyToClipboard(url)
         linkCopied.value = true
         setTimeout(() => { linkCopied.value = false }, 2500)
       }
@@ -108,9 +131,12 @@ async function shareGame() {
     return
   }
 
-  await navigator.clipboard.writeText(url)
-  linkCopied.value = true
-  setTimeout(() => { linkCopied.value = false }, 2500)
+  const ok = await copyToClipboard(url)
+  menuOpen.value = false
+  if (ok) {
+    linkCopied.value = true
+    setTimeout(() => { linkCopied.value = false }, 2500)
+  }
 }
 
 // Hold-to-unselect hint toast
