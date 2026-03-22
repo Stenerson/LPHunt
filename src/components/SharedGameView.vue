@@ -22,6 +22,25 @@ const shareBackCopied = ref(false)
 const currentItems = computed(() => showingCanada.value ? PROVINCES : STATES)
 const currentRegion = computed(() => showingCanada.value ? 'provinces' : 'states')
 
+const flatList = computed(() => {
+  const sections = [
+    { key: 'new',     label: activeGame.value ? 'New for you' : 'Found', color: 'amber' },
+    { key: 'both',    label: 'Both found',  color: 'green' },
+    { key: 'found',   label: 'Your finds',  color: 'green' },
+    { key: 'unfound', label: 'Not found',   color: 'gray'  },
+  ]
+  const all = currentItems.value
+  const result = []
+  for (const { key, label, color } of sections) {
+    const items = all.filter(i => cardState(i.abbr) === key)
+    if (items.length) {
+      result.push({ type: 'header', label: `${label} · ${items.length}`, color })
+      items.forEach(item => result.push({ type: 'card', abbr: item.abbr, name: item.name }))
+    }
+  }
+  return result
+})
+
 function isFound(abbr) {
   return props.sharedGame[currentRegion.value]?.[abbr]?.found ?? false
 }
@@ -195,63 +214,76 @@ function saveAndPlay() {
       class="flex-1 p-3 grid gap-2 content-start pb-40"
       style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr))"
     >
-      <div
-        v-for="item in currentItems"
-        :key="item.abbr"
-        class="relative flex flex-col rounded-xl overflow-hidden w-full aspect-[2/1] select-none border-2"
-        :class="{
-          'bg-amber-100 border-amber-100 shadow-md':                    cardState(item.abbr) === 'new',
-          'bg-amber-100 border-lp-green shadow-md':                      cardState(item.abbr) === 'both',
-          'bg-white border-lp-green shadow-md':                         cardState(item.abbr) === 'found',
-          'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm': cardState(item.abbr) === 'unfound',
-        }"
-      >
-        <!-- Top strip -->
-        <div class="h-4 w-full flex-shrink-0" :class="{
-          'bg-amber-200':                     cardState(item.abbr) === 'new',
-          'bg-lp-green':                      cardState(item.abbr) === 'both' || cardState(item.abbr) === 'found',
-          'bg-gray-300 dark:bg-gray-600':     cardState(item.abbr) === 'unfound',
-        }"/>
+      <template v-for="entry in flatList" :key="entry.type === 'header' ? `h-${entry.label}` : entry.abbr">
+        <!-- Section header -->
+        <div
+          v-if="entry.type === 'header'"
+          class="col-span-full px-1 pt-2 pb-1 text-xs font-semibold uppercase tracking-widest"
+          :class="{
+            'text-amber-500': entry.color === 'amber',
+            'text-lp-green':  entry.color === 'green',
+            'text-gray-400':  entry.color === 'gray',
+          }"
+        >{{ entry.label }}</div>
 
-        <!-- Bolt holes -->
-        <svg class="absolute top-1.5 left-2 w-2.5 h-2.5" viewBox="0 0 10 10">
-          <circle cx="5" cy="5" r="4.5"
-            :fill="cardState(item.abbr) === 'unfound' ? '#9CA3AF' : '#D1D5DB'"
-            :stroke="cardState(item.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'"
-            stroke-width="0.8"
-          />
-          <line x1="5" y1="2" x2="5" y2="8" :stroke="cardState(item.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="2" y1="5" x2="8" y2="5" :stroke="cardState(item.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <svg class="absolute top-1.5 right-2 w-2.5 h-2.5" viewBox="0 0 10 10">
-          <circle cx="5" cy="5" r="4.5"
-            :fill="cardState(item.abbr) === 'unfound' ? '#9CA3AF' : '#D1D5DB'"
-            :stroke="cardState(item.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'"
-            stroke-width="0.8"
-          />
-          <line x1="5" y1="2" x2="5" y2="8" :stroke="cardState(item.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="2" y1="5" x2="8" y2="5" :stroke="cardState(item.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+        <!-- Card -->
+        <div
+          v-else
+          class="relative flex flex-col rounded-xl overflow-hidden w-full aspect-[2/1] select-none border-2"
+          :class="{
+            'bg-amber-100 border-amber-100 shadow-md':                                   cardState(entry.abbr) === 'new',
+            'bg-amber-100 border-lp-green shadow-md':                                    cardState(entry.abbr) === 'both',
+            'bg-white border-lp-green shadow-md':                                        cardState(entry.abbr) === 'found',
+            'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 shadow-sm': cardState(entry.abbr) === 'unfound',
+          }"
+        >
+          <!-- Top strip -->
+          <div class="h-4 w-full flex-shrink-0" :class="{
+            'bg-amber-200':                 cardState(entry.abbr) === 'new',
+            'bg-lp-green':                  cardState(entry.abbr) === 'both' || cardState(entry.abbr) === 'found',
+            'bg-gray-300 dark:bg-gray-600': cardState(entry.abbr) === 'unfound',
+          }"/>
 
-        <!-- Main content -->
-        <div class="flex-1 flex flex-col items-center justify-center px-2">
-          <span
-            class="font-black text-xl leading-none tracking-normal"
-            :class="cardState(item.abbr) === 'unfound' ? 'text-gray-500 dark:text-gray-400' : 'text-lp-dark'"
-          >{{ item.abbr }}</span>
-          <span
-            class="text-[9px] uppercase tracking-normal mt-0.5 leading-tight text-center w-full overflow-hidden"
-            :class="cardState(item.abbr) === 'unfound' ? 'text-gray-500 dark:text-gray-400 opacity-75' : 'text-lp-dark opacity-60'"
-          >{{ item.name }}</span>
+          <!-- Bolt holes -->
+          <svg class="absolute top-1.5 left-2 w-2.5 h-2.5" viewBox="0 0 10 10">
+            <circle cx="5" cy="5" r="4.5"
+              :fill="cardState(entry.abbr) === 'unfound' ? '#9CA3AF' : '#D1D5DB'"
+              :stroke="cardState(entry.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'"
+              stroke-width="0.8"
+            />
+            <line x1="5" y1="2" x2="5" y2="8" :stroke="cardState(entry.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="2" y1="5" x2="8" y2="5" :stroke="cardState(entry.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <svg class="absolute top-1.5 right-2 w-2.5 h-2.5" viewBox="0 0 10 10">
+            <circle cx="5" cy="5" r="4.5"
+              :fill="cardState(entry.abbr) === 'unfound' ? '#9CA3AF' : '#D1D5DB'"
+              :stroke="cardState(entry.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'"
+              stroke-width="0.8"
+            />
+            <line x1="5" y1="2" x2="5" y2="8" :stroke="cardState(entry.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="2" y1="5" x2="8" y2="5" :stroke="cardState(entry.abbr) === 'unfound' ? '#6B7280' : '#9CA3AF'" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+
+          <!-- Main content -->
+          <div class="flex-1 flex flex-col items-center justify-center px-2">
+            <span
+              class="font-black text-xl leading-none tracking-normal"
+              :class="cardState(entry.abbr) === 'unfound' ? 'text-gray-500 dark:text-gray-400' : 'text-lp-dark'"
+            >{{ entry.abbr }}</span>
+            <span
+              class="text-[9px] uppercase tracking-normal mt-0.5 leading-tight text-center w-full overflow-hidden"
+              :class="cardState(entry.abbr) === 'unfound' ? 'text-gray-500 dark:text-gray-400 opacity-75' : 'text-lp-dark opacity-60'"
+            >{{ entry.name }}</span>
+          </div>
+
+          <!-- Bottom strip -->
+          <div class="h-2 w-full flex-shrink-0" :class="{
+            'bg-amber-200':                 cardState(entry.abbr) === 'new',
+            'bg-lp-green':                  cardState(entry.abbr) === 'both' || cardState(entry.abbr) === 'found',
+            'bg-gray-300 dark:bg-gray-600': cardState(entry.abbr) === 'unfound',
+          }"/>
         </div>
-
-        <!-- Bottom strip -->
-        <div class="h-2 w-full flex-shrink-0" :class="{
-          'bg-amber-200':                     cardState(item.abbr) === 'new',
-          'bg-lp-green':                      cardState(item.abbr) === 'both' || cardState(item.abbr) === 'found',
-          'bg-gray-300 dark:bg-gray-600':     cardState(item.abbr) === 'unfound',
-        }"/>
-      </div>
+      </template>
     </div>
 
     <!-- Sticky CTA -->
