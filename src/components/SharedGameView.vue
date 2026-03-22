@@ -4,6 +4,7 @@ import { STATES } from '../data/states.js'
 import { PROVINCES } from '../data/provinces.js'
 import { useGame } from '../composables/useGame.js'
 import { useDarkMode } from '../composables/useDarkMode.js'
+import { encodeGame } from '../composables/useShare.js'
 import ProgressBar from './ProgressBar.vue'
 
 const props = defineProps({
@@ -15,6 +16,8 @@ const { importGame, mergeGame, activeGame } = useGame()
 const { isDark, toggle: toggleDark } = useDarkMode()
 const showingCanada = ref(false)
 const showInfoModal = ref(true)
+const showShareBackModal = ref(false)
+const shareBackCopied = ref(false)
 
 const currentItems = computed(() => showingCanada.value ? PROVINCES : STATES)
 const currentRegion = computed(() => showingCanada.value ? 'provinces' : 'states')
@@ -66,6 +69,49 @@ function cardState(abbr) {
 
 function mergeAndPlay() {
   mergeGame(props.sharedGame)
+  showShareBackModal.value = true
+}
+
+async function copyToClipboard(url) {
+  try {
+    await navigator.clipboard.writeText(url)
+    return true
+  } catch {
+    try {
+      const ta = document.createElement('textarea')
+      ta.value = url
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.focus()
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      return true
+    } catch {
+      return false
+    }
+  }
+}
+
+async function shareBack() {
+  const url = window.location.href.split('#')[0] + '#share/' + encodeGame(activeGame.value)
+  if (navigator.share) {
+    try {
+      await navigator.share({ url })
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        const ok = await copyToClipboard(url)
+        if (ok) { shareBackCopied.value = true }
+      }
+    }
+    return
+  }
+  const ok = await copyToClipboard(url)
+  if (ok) { shareBackCopied.value = true }
+}
+
+function finishMerge() {
   emit('merge')
 }
 
@@ -218,6 +264,39 @@ function saveAndPlay() {
       </button>
     </div>
   </div>
+
+  <!-- Share-back prompt (shown after merging) -->
+  <Transition name="fade">
+    <div
+      v-if="showShareBackModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+    >
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 mx-6 shadow-2xl max-w-sm w-full">
+        <div class="text-4xl mb-3 text-center">🔀</div>
+        <h2 class="font-fredoka text-2xl text-lp-dark dark:text-gray-100 text-center mb-2">Merged!</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+          Their finds are now in your game. Want to share back so they can stay in sync?
+        </p>
+
+        <button
+          @click="shareBack"
+          class="w-full font-semibold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition-all mb-3"
+          :class="shareBackCopied
+            ? 'bg-lp-green text-white'
+            : 'bg-amber-100 text-lp-dark'"
+        >
+          {{ shareBackCopied ? '✓ Link Copied!' : 'Share My Game' }}
+        </button>
+
+        <button
+          @click="finishMerge"
+          class="w-full text-gray-400 dark:text-gray-500 text-sm py-2 active:opacity-70 transition-opacity"
+        >
+          Not now
+        </button>
+      </div>
+    </div>
+  </Transition>
 
   <!-- Shared game explainer modal -->
   <Transition name="fade">
