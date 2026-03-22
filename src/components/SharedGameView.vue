@@ -297,7 +297,7 @@ function saveAndPlay() {
       </button>
       <button
         @click="saveAndPlay"
-        class="w-full bg-lp-red text-white font-semibold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition-all"
+        class="w-full bg-lp-green text-white font-semibold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition-all"
       >
         Continue as New Game
       </button>

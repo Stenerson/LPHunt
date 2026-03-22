@@ -22,7 +22,7 @@ const { games } = useGame()
     <div class="flex flex-col gap-4 w-full max-w-xs">
       <button
         @click="$emit('navigate', 'new-game')"
-        class="bg-lp-red text-white font-semibold text-lg py-4 px-6 rounded-2xl shadow-lg active:scale-95 transition-all"
+        class="bg-lp-green text-white font-semibold text-lg py-4 px-6 rounded-2xl shadow-lg active:scale-95 transition-all"
       >
         Start New Game
       </button>

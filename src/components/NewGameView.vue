@@ -78,7 +78,7 @@ function submit() {
         <button
           @click="submit"
           :disabled="!startingState"
-          class="w-full bg-lp-red text-white font-semibold text-lg py-4 rounded-2xl shadow-lg transition-all mt-2"
+          class="w-full bg-lp-green text-white font-semibold text-lg py-4 rounded-2xl shadow-lg transition-all mt-2"
           :class="startingState ? 'active:scale-95' : 'opacity-40 cursor-not-allowed'"
         >
           Let's Go!
