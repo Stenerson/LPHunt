@@ -90,6 +90,7 @@ const previousBest = computed(() => {
 
 // Share
 const linkCopied = ref(false)
+const showShareModal = ref(false)
 
 async function copyToClipboard(url) {
   try {
@@ -118,7 +119,7 @@ async function shareGame() {
   const url = window.location.href.split('#')[0] + '#share/' + encodeGame(activeGame.value)
 
   if (navigator.share) {
-    menuOpen.value = false
+    showShareModal.value = false
     try {
       await navigator.share({ url })
     } catch (e) {
@@ -132,7 +133,32 @@ async function shareGame() {
   }
 
   const ok = await copyToClipboard(url)
-  menuOpen.value = false
+  showShareModal.value = false
+  if (ok) {
+    linkCopied.value = true
+    setTimeout(() => { linkCopied.value = false }, 2500)
+  }
+}
+
+async function shareApp() {
+  const url = window.location.href.split('#')[0]
+
+  if (navigator.share) {
+    showShareModal.value = false
+    try {
+      await navigator.share({ url })
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        await copyToClipboard(url)
+        linkCopied.value = true
+        setTimeout(() => { linkCopied.value = false }, 2500)
+      }
+    }
+    return
+  }
+
+  const ok = await copyToClipboard(url)
+  showShareModal.value = false
   if (ok) {
     linkCopied.value = true
     setTimeout(() => { linkCopied.value = false }, 2500)
@@ -270,13 +296,13 @@ function isFound(abbr) {
           Past Games
         </button>
         <button
-          @click="shareGame"
+          @click="menuOpen = false; showShareModal = true"
           class="w-full text-left px-4 py-3.5 text-lp-dark dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 active:bg-gray-100 dark:active:bg-gray-700 flex items-center gap-3"
         >
           <svg class="w-5 h-5 opacity-60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
           </svg>
-          Share Game
+          Share
         </button>
         <button
           v-if="activeGame"
@@ -495,6 +521,42 @@ function isFound(abbr) {
         <h2 class="font-fredoka text-3xl text-lp-dark dark:text-gray-100 mb-2">All 50 States!</h2>
         <p class="text-gray-500 dark:text-gray-400 text-sm">You found every US license plate on this trip.</p>
         <p class="text-gray-300 dark:text-gray-600 text-xs mt-5">Tap anywhere to continue</p>
+      </div>
+    </div>
+  </Transition>
+
+  <!-- Share modal -->
+  <Transition name="fade">
+    <div
+      v-if="showShareModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+    >
+      <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 mx-6 shadow-2xl max-w-sm w-full">
+        <h2 class="font-fredoka text-2xl text-lp-dark dark:text-gray-100 text-center mb-2">Share</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">What do you want to share?</p>
+
+        <button
+          @click="shareGame"
+          class="w-full bg-amber-100 text-lp-dark font-semibold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition-all mb-2"
+        >
+          Share My Progress
+        </button>
+        <p class="text-xs text-gray-400 dark:text-gray-500 text-center mb-4">Send a snapshot — friends see which plates you've found</p>
+
+        <button
+          @click="shareApp"
+          class="w-full bg-lp-green text-white font-semibold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition-all mb-2"
+        >
+          Share License Plate Hunt
+        </button>
+        <p class="text-xs text-gray-400 dark:text-gray-500 text-center mb-4">Invite someone to start their own hunt</p>
+
+        <button
+          @click="showShareModal = false"
+          class="w-full text-gray-400 dark:text-gray-500 text-sm py-2 active:opacity-70 transition-opacity"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   </Transition>
