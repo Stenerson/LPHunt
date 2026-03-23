@@ -19,14 +19,19 @@ const menuOpen = ref(false)
 // Keep screen awake while playing (Wake Lock API on Android/desktop, video hack on iOS)
 const noSleep = new NoSleep()
 function enableNoSleep() {
-  noSleep.enable()
+  noSleep.enable().catch(() => {})
   document.removeEventListener('touchstart', enableNoSleep)
   document.removeEventListener('click', enableNoSleep)
 }
-onMounted(() => {
-  // NoSleep requires a user gesture on iOS before it can play video
-  document.addEventListener('touchstart', enableNoSleep, { once: true })
-  document.addEventListener('click', enableNoSleep, { once: true })
+onMounted(async () => {
+  // Try immediately — works on iOS 16.4+/Android/desktop via Wake Lock API (no gesture needed).
+  // Falls back to gesture listeners for older iOS where the video path requires user interaction.
+  try {
+    await noSleep.enable()
+  } catch {
+    document.addEventListener('touchstart', enableNoSleep, { once: true })
+    document.addEventListener('click', enableNoSleep, { once: true })
+  }
 })
 onUnmounted(() => {
   noSleep.disable()
